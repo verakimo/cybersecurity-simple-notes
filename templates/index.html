@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cybersecurity Simple Notes</title>
+</head>
+<body>
+    <h1>Cybersecurity Simple Notes</h1>
+
+    <p><a href="/search">Search notes</a></p>
+
+    {% if session["user_id"] %}
+        <p>Logged in as: {{ session["username"] }}</p>
+        <p><a href="/notes/new">Create note</a></p>
+        <p><a href="/logout">Logout</a></p>
+    {% else %}
+        <p>
+            <a href="/register">Register</a>
+            <a href="/login">Login</a>
+        </p>
+    {% endif %}
+
+    {% if notes %}
+        {% for note in notes %}
+            <h2>{{ note["title"] }}</h2>
+
+            <!-- FLAW 4: A7:2017 Cross-Site Scripting (XSS) - Stored XSS -->
+            <p>{{ note["content"] | safe }}</p>
+
+            {# FIX:
+            <p>{{ note["content"] }}</p>
+            #}
+
+            <p>
+                <a href="/notes/{{ note['id'] }}/edit">Edit</a>
+            </p>
+
+            <form action="/notes/{{ note['id'] }}/delete" method="post">
+
+                <!-- FLAW 5: CSRF -->
+                <!-- The form does not include a CSRF token. -->
+
+                {# FIX:
+                <input type="hidden" name="csrf_token" value="{{ session['csrf_token'] }}">
+                #}
+
+                <button type="submit">Delete</button>
+            </form>
+        {% endfor %}
+    {% else %}
+        <p>No notes yet.</p>
+    {% endif %}
+</body>
+</html>
